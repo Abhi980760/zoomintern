@@ -39,7 +39,7 @@ CEO_TITLE = os.environ["CEO_TITLE"]
 
 SMTP_SERVER = "://gmail.com"
 SMTP_PORT = 587
-GMAIL_USER = os.environ["aatomar007@gmail.com"] 
+GMAIL_USER = os.environ.get("GMAIL_USER", "aatomar007@gmail.com")
 GMAIL_APP_PASSWORD = os.environ["cfknnqtnjbcwqjiw"]
 EMAIL_FROM_NAME = os.environ["EMAIL_FROM_NAME"]
 
