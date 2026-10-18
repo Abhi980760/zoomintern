@@ -36,15 +36,14 @@ ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
 JWT_SECRET = os.environ["JWT_SECRET"]
 CEO_NAME = os.environ["CEO_NAME"]
 CEO_TITLE = os.environ["CEO_TITLE"]
-EMAIL_BASE_URL = "https://integrations.emergentagent.com"
-EMAIL_KEY = os.environ["EMERGENT_EMAIL_KEY"]
+
+SMTP_SERVER = "://gmail.com"
+SMTP_PORT = 587
+GMAIL_USER = os.environ["aatomar007@gmail.com"] 
+GMAIL_APP_PASSWORD = os.environ["cfkn nqtn jbcw qjiw"]
 EMAIL_FROM_NAME = os.environ["EMAIL_FROM_NAME"]
-EMAIL_REPLY_TO = os.environ.get("EMAIL_REPLY_TO")
-STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
-STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
-EMERGENT_KEY = os.environ["EMERGENT_LLM_KEY"]
+
 APP_NAME = "zoomintern"
-storage_key = None
 
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
@@ -56,77 +55,33 @@ security = HTTPBearer(auto_error=False)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("zoomintern")
 
+async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None:
 
-# ---------- Managed email safety gate ----------
-_SHORTENERS = ("bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly", "goo.gl", "rebrand.ly")
-_CRED_ASK = ("reply with your password", "reply with the code", "send your password", "cvv",
-             "send us your password", "enter your password below", "confirm your card number",
-             "your full card number", "seed phrase", "recovery phrase", "verify your card",
-             "social security number", "confirm your bank details")
-_HOSTISH = re.compile(r"\b(?:https?://)?((?:[a-z0-9-]+\.)+[a-z]{2,})", re.I)
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
 
-
-def _host_ok(host: str) -> bool:
-    if not host or "xn--" in host:
-        return False
+    msg = MIMEMultipart()
+    msg["From"] = f"{EMAIL_FROM_NAME} <{GMAIL_USER}>"
+    msg["To"] = to
+    msg["Subject"] = subject
+    
+    msg.attach(MIMEText(html, "html"))
+    
     try:
-        ipaddress.ip_address(host)
-        return False
-    except ValueError:
-        return not any(host == shortener or host.endswith("." + shortener) for shortener in _SHORTENERS)
+        await asyncio.to_thread(
+            _execute_smtp_send, msg, to
+        )
+        return f"msg-sent-{uuid.uuid4().hex[:6]}"
+    except Exception as error:
+        logger.error("Gmail SMTP delivery failed: %s", error)
+        raise RuntimeError("Email delivery could not be completed") from error
 
-
-def _same_site(shown: str, real: str) -> bool:
-    return shown == real or real.endswith("." + shown) or shown.endswith("." + real)
-
-
-class _EmailScan(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.tags, self.urls, self.anchors = set(), [], []
-        self._href, self._text = None, []
-
-    def handle_starttag(self, tag, attrs):
-        self.tags.add(tag.lower())
-        self.urls += [value for key, value in attrs if key.lower() in ("href", "src") and value]
-        if tag.lower() == "a":
-            self._href = dict((key.lower(), value) for key, value in attrs).get("href")
-            self._text = []
-
-    def handle_data(self, data):
-        if self._href is not None:
-            self._text.append(data)
-
-    def handle_endtag(self, tag):
-        if tag.lower() == "a" and self._href is not None:
-            self.anchors.append((self._href, "".join(self._text)))
-            self._href, self._text = None, []
-
-
-def _assert_safe_email(subject: str, html: str) -> None:
-    scan = _EmailScan()
-    scan.feed(html)
-    if scan.tags & {"form", "input", "textarea", "select"}:
-        raise ValueError("Email content cannot contain forms or input fields")
-    body = f"{subject}\n{html}".lower()
-    if any(phrase in body for phrase in _CRED_ASK):
-        raise ValueError("Email content cannot request credentials")
-    for url in scan.urls:
-        clean_url = url.strip().lower()
-        if clean_url.startswith(("mailto:", "tel:", "cid:", "#")):
-            continue
-        if not clean_url.startswith("https://"):
-            raise ValueError("Email links must use absolute HTTPS URLs")
-        parsed = urlparse(clean_url)
-        if not _host_ok(parsed.hostname or "") or parsed.username is not None:
-            raise ValueError("Email link host is not permitted")
-    for href, text in scan.anchors:
-        real = urlparse(href.strip().lower()).hostname or ""
-        if not real:
-            continue
-        for match in _HOSTISH.finditer(text):
-            if not _same_site(match.group(1).lower(), real):
-                raise ValueError("Email link text does not match its destination")
+def _execute_smtp_send(msg, to):
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()
+        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+        server.sendmail(msg["From"], to, msg.as_string())
 
 
 async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None:
@@ -149,7 +104,6 @@ async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None
         raise RuntimeError("Email delivery could not be completed") from error
 
 
-# ---------- Managed signature storage ----------
 def _init_storage(force: bool = False) -> str:
     global storage_key
     if storage_key and not force:
