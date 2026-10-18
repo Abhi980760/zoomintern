@@ -1,8 +1,8 @@
 import axios from "axios";
 
-// 1. आपका बिल्कुल सही और लाइव बैकएंड बेस यूआरएल
+// 1. बिना /api के बिल्कुल सही बेस URL
 export const api = axios.create({
-  baseURL: "https://zoomintern.onrender.com/api",
+  baseURL: "https://zoomintern.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
@@ -24,7 +24,7 @@ export const clearToken = () => {
   localStorage.removeItem("zi_admin_access");
 };
 
-// 👇 यह आखिरी गायब फंक्शन था, इसे यहाँ परफेक्ट सेट कर दिया है
+// 4. इंटर्न पोर्टल के लिए गायब हुआ फंक्शन
 export const getInternToken = () => {
   return localStorage.getItem("zi_admin_access"); 
 };
