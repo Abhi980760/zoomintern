@@ -2,13 +2,17 @@
 name = "zoomintern"
 version = "0.1.0"
 description = "Backend for zoomintern"
-authors = ["Abhishek Singh Tomar"]
+authors = ["Abhishek Singh Tomar <aatomar007@gmail.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.110.0"
 uvicorn = {extras = ["standard"], version = "^0.29.0"}
+motor = "^3.3.0"
+httpx = "^0.27.0"
+bcrypt = "^4.1.0"
+pyjwt = "^2.8.0"
 
 [build-system]
 requires = ["poetry-core"]
