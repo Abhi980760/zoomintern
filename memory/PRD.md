@@ -5,7 +5,7 @@ Build an internship-providing website (ZoomIntern) with an admin portal where th
 
 ## User Choices
 - Name: ZoomIntern
-- Email: Emergent-managed transactional email delivery, with ZoomIntern as the sender display name
+- Email: zoomIntern  transactional email delivery, with ZoomIntern as the sender display name
 - Admin auth: Simple email + password (from `.env`), JWT-based
 - CEO signature: Admin-uploaded PNG/JPEG/WEBP image when available; stylized generated fallback
 - Public verification: Unique cert IDs (ZI-YYYY-XXXX) + QR code
