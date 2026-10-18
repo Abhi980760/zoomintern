@@ -1,17 +1,17 @@
 import axios from "axios";
 
-// 1. बिना /api के बिल्कुल सही बेस URL
+// 1. छोटे अक्षरों वाला api - पूरी बेस URL के साथ
 export const api = axios.create({
-  baseURL: "https://zoomintern.onrender.com",
+  baseURL: "https://zoomintern.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// 2. बड़े अक्षरों वाला API
+// 2. बड़े अक्षरों वाला API - पूरी बेस URL के साथ (ताकि कोई भी फ़ाइल क्रैश न हो)
 export const API = api;
 
-// 3. टोकन और ऑथेंटिकेशन के सभी ज़रूरी फंक्शन्स
+// 3. टोकन और ऑथेंटिकेशन के सभी ज़रूरी फंक्शन्स जो अलग-अलग फाइलों को चाहिए
 export const saveToken = (token) => {
   localStorage.setItem("zi_admin_access", token);
 };
@@ -24,7 +24,6 @@ export const clearToken = () => {
   localStorage.removeItem("zi_admin_access");
 };
 
-// 4. इंटर्न पोर्टल के लिए गायब हुआ फंक्शन
 export const getInternToken = () => {
   return localStorage.getItem("zi_admin_access"); 
 };
