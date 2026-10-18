@@ -1,24 +1,38 @@
 import axios from "axios";
 
-// आपकी सटीक बेस यूआरएल यहाँ सेट है
+const isBrowser = typeof window !== "undefined";
+
 export const api = axios.create({
   baseURL: "https://zoomintern.onrender.com/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
+  timeout: 60000, // Render cold start ke liye
 });
 
 export const saveToken = (token) => {
-  localStorage.setItem("zi_admin_access", token);
+  if (isBrowser) localStorage.setItem("zi_admin_access", token);
 };
 
-export const getToken = () => {
-  return localStorage.getItem("zi_admin_access");
-};
+export const getToken = () =>
+  isBrowser ? localStorage.getItem("zi_admin_access") : null;
 
-// इसके गायब होने से वेर्सेल एरर दे रहा था, इसे यहाँ परफेक्ट रखा है
 export const clearToken = () => {
-  localStorage.removeItem("zi_admin_access");
+  if (isBrowser) localStorage.removeItem("zi_admin_access");
 };
+
+// Har request ke sath token bhejo
+api.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// Token expire ho to clear karo
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) clearToken();
+    return Promise.reject(err);
+  }
+);
 
 export default api;
