@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// आपका लाइव और एक्टिव बैकएंड लिंक
+// आपकी सटीक बेस यूआरएल यहाँ सेट है
 export const api = axios.create({
   baseURL: "https://zoomintern.onrender.com/api",
   headers: {
@@ -16,7 +16,9 @@ export const getToken = () => {
   return localStorage.getItem("zi_admin_access");
 };
 
-// इसी लाइन के गायब होने से बिल्ड फेल हो रहा था, इसे यहाँ परफेक्ट सेट कर दिया है
+// इसके गायब होने से वेर्सेल एरर दे रहा था, इसे यहाँ परफेक्ट रखा है
 export const clearToken = () => {
   localStorage.removeItem("zi_admin_access");
 };
+
+export default api;
