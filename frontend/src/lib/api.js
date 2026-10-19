@@ -24,6 +24,10 @@ export const clearToken = () => {
   localStorage.removeItem("zi_admin_access");
 };
 
+export const clearInternToken = () => {
+  localStorage.removeItem("zi_admin_access");
+};
+
 export const getInternToken = () => {
   return localStorage.getItem("zi_admin_access"); 
 };
