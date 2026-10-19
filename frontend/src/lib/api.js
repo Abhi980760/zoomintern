@@ -24,13 +24,17 @@ export const clearToken = () => {
   localStorage.removeItem("zi_admin_access");
 };
 
-export const clearInternToken = () => {
-  localStorage.removeItem("zi_admin_access");
-};
+
+export function saveInternToken(token) {
+  localStorage.setItem("zi_intern_token", token);
+}
 
 export const getInternToken = () => {
   return localStorage.getItem("zi_admin_access"); 
 };
 
+export const clearInternToken = () => {
+  localStorage.removeItem("zi_admin_access");
+};
 // सुरक्षा के लिए डिफ़ॉल्ट एक्सपोर्ट
 export default api;
