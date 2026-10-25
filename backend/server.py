@@ -31,7 +31,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://zoomintern.vercel.app",
+        "https://www.zoomintern.online/",
         "http://localhost:5173"
     ],
     allow_credentials=True,
