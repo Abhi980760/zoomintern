@@ -26,16 +26,16 @@ from urllib.parse import urlparse, quote
 
 from certificate_pdf import build_certificate_pdf
 
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
 
-app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "zoomintern-66yzwa6td-abhi-59eb.vercel.app",
-        "http://localhost:5173"
+        "https://zoominterm.online",
+        "https://www.zoominterm.online",
+        "https://zoomintern-66yzwa6td-abhi-59eb.vercel.app",
+        "http://localhost:5173",
     ],
     allow_credentials=True,
     allow_methods=["*"],
