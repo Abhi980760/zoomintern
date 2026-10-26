@@ -79,6 +79,7 @@ logger = logging.getLogger("zoomintern")
 
 
 async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None:
+    import asyncio
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
@@ -86,11 +87,30 @@ async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None
     if not GMAIL_USER or not GMAIL_APP_PASSWORD:
         raise RuntimeError("GMAIL_USER or GMAIL_APP_PASSWORD is missing")
 
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("alternative")
     msg["From"] = f"{EMAIL_FROM_NAME} <{GMAIL_USER}>"
     msg["To"] = to
     msg["Subject"] = subject
-    msg.attach(MIMEText(html, "html"))
+
+    if EMAIL_REPLY_TO:
+        msg["Reply-To"] = EMAIL_REPLY_TO
+
+    msg.attach(MIMEText(html, "html", "utf-8"))
+
+    def send_email():
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
+            server.starttls()
+            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+            server.send_message(msg)
+
+    try:
+        await asyncio.to_thread(send_email)
+        logger.info("Email sent successfully to %s", to)
+        return None
+    except Exception as error:
+        logger.exception("Gmail email delivery failed")
+        raise RuntimeError("Email delivery could not be completed") from error
+
 
     def send_email():
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
@@ -111,26 +131,6 @@ def _execute_smtp_send(msg, to):
         server.starttls()
         server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
         server.sendmail(msg["From"], to, msg.as_string())
-
-
-async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None:
-    _assert_safe_email(subject, html)
-    payload = {"to": [to], "subject": subject, "html": html, "from_name": EMAIL_FROM_NAME}
-    if EMAIL_REPLY_TO:
-        payload["contact_email"] = EMAIL_REPLY_TO
-    try:
-        import httpx
-        async with httpx.AsyncClient(timeout=30) as http_client:
-            response = await http_client.post(
-                f"{EMAIL_BASE_URL}/api/v1/email/send",
-                headers={"X-Email-Key": EMAIL_KEY},
-                json=payload,
-            )
-        response.raise_for_status()
-        return response.json().get("id")
-    except Exception as error:
-        logger.error("Managed email delivery failed: %s", error)
-        raise RuntimeError("Email delivery could not be completed") from error
 
 
 def _init_storage(force: bool = False) -> str:
