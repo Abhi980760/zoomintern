@@ -27,6 +27,9 @@ from urllib.parse import urlparse, quote
 from certificate_pdf import build_certificate_pdf
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
