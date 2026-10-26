@@ -33,12 +33,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="ZoomIntern API")
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://zoominterm.online",
-        "https://www.zoominterm.online",
-        "https://zoomintern-66yzwa6td-abhi-59eb.vercel.app",
+        "https://zoomintern.online",
+        "https://www.zoomintern.online",
+        "https://zoomintern.vercel.app",
         "http://localhost:5173",
     ],
     allow_credentials=True,
