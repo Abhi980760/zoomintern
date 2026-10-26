@@ -99,11 +99,11 @@ async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None
     msg.attach(MIMEText(html, "html", "utf-8"))
 
     with smtplib.SMTP("smtp.gmail.com", 587, timeout=60) as server:
-    server.ehlo()
-    server.starttls()
-    server.ehlo()
-    server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-    server.send_message(msg)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+        server.send_message(msg)
 
     try:
         await asyncio.to_thread(send_email)
