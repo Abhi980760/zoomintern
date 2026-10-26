@@ -271,9 +271,21 @@ def build_certificate_pdf(
     c.drawString(170, footer_y + 18, "Scan the QR to verify this")
     c.drawString(170, footer_y + 8, "certificate instantly")
 
-    # Center: official MSME logo (replaces the ZI verification seal)
-    if not _draw_msme_logo(c, w / 2, footer_y + 25, size=70):
-        _draw_seal(c, w / 2, footer_y + 25, r=28)
+    
+    # Center: MSME logo and registration number
+    if not _draw_msme_logo(c, w / 2, footer_y + 34, size=58):
+        _draw_seal(c, w / 2, footer_y + 34, r=24)
+
+    # MSME registration number below the logo
+    c.saveState()
+    c.setFillColor(NAVY)
+    c.setFont("Helvetica-Bold", 7)
+    c.drawCentredString(
+        w / 2,
+        footer_y - 3,
+        "MSME Registration No.: UDYAM-UP-68-0063200"
+    )
+    c.restoreState()
 
     # Signature (right)
     sig_cx = w - 180
