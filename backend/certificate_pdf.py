@@ -302,14 +302,15 @@ def build_certificate_pdf(
     c.setFont("Helvetica-Bold", 8)
     c.drawCentredString(sig_cx, footer_y - 4, ceo_title.upper())
 
-    
-c.showPage()
-c.save()
 
-pdf_bytes = buf.getvalue()
 
-print("PDF bytes:", len(pdf_bytes))
-print("PDF header:", pdf_bytes[:8])
-print("PDF starts correctly:", pdf_bytes.startswith(b"%PDF-"))
+    c.showPage()
+    c.save()
 
-return pdf_bytes
+    pdf_bytes = buf.getvalue()
+
+    print("PDF bytes:", len(pdf_bytes))
+    print("PDF header:", pdf_bytes[:8])
+    print("PDF starts correctly:", pdf_bytes.startswith(b"%PDF-"))
+
+    return pdf_bytes
