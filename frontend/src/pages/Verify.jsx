@@ -86,7 +86,7 @@ export default function Verify() {
                 </div>
                 <a
                   data-testid="download-pdf-btn"
-                  href={`${API}/certificates/${result.certificate_id}/pdf`}
+                  href={`${api.defaults.baseURL}/certificates/${encodeURIComponent(result.certificate_id)}/pdf`}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-8 inline-flex items-center gap-2 px-6 h-11 rounded-full border border-[#FBBF24]/50 text-[#FBBF24] hover:bg-[#FBBF24]/10"
