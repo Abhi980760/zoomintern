@@ -77,27 +77,34 @@ security = HTTPBearer(auto_error=False)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("zoomintern")
 
-async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None:
 
+async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None:
     import smtplib
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
+
+    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
+        raise RuntimeError("GMAIL_USER or GMAIL_APP_PASSWORD is missing")
 
     msg = MIMEMultipart()
     msg["From"] = f"{EMAIL_FROM_NAME} <{GMAIL_USER}>"
     msg["To"] = to
     msg["Subject"] = subject
-    
     msg.attach(MIMEText(html, "html"))
-    
+
+    def send_email():
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
+            server.starttls()
+            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_USER, [to], msg.as_string())
+
     try:
-        await asyncio.to_thread(
-            _execute_smtp_send, msg, to
-        )
+        await asyncio.to_thread(send_email)
+        logger.info("Certificate email sent to %s", to)
         return f"msg-sent-{uuid.uuid4().hex[:6]}"
     except Exception as error:
-        logger.error("Gmail SMTP delivery failed: %s", error)
-        raise RuntimeError("Email delivery could not be completed") from error
+        logger.exception("Gmail SMTP delivery failed")
+        raise RuntimeError(f"Email delivery failed: {error}") from error
 
 def _execute_smtp_send(msg, to):
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
