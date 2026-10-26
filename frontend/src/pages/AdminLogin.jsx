@@ -28,17 +28,25 @@ export default function AdminLogin() {
     saveToken(r.data.token);
     toast.success("Welcome back");
     navigate("/admin");
+  
   } catch (error) {
-    const status = error?.response?.status;
+    console.error("Admin login error:", error);
+    console.error("Response:", error?.response?.data);
+    console.error("Status:", error?.response?.status);
+    console.error("Message:", error?.message);
 
-    console.error("Admin login failed. HTTP status:", status ?? "No response");
+    const status = error?.response?.status;
 
     if (status === 401 || status === 403) {
       toast.error("Email/password reject ho rahe hain.");
+    } else if (error?.code === "ECONNABORTED") {
+      toast.error("Request timeout. Server ko response dene mein der ho rahi hai.");
     } else if (!error?.response) {
-      toast.error("Server se connection nahi ho raha.");
+      toast.error(
+        "Connection/CORS error. Browser console mein details check karein."
+      );
     } else {
-      toast.error(`Login server error (${status}).`);
+      toast.error(`Login error (${status}).`);
     }
   } finally {
     setLoading(false);
