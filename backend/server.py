@@ -59,7 +59,8 @@ JWT_SECRET = os.environ["JWT_SECRET"]
 CEO_NAME = os.environ["CEO_NAME"]
 CEO_TITLE = os.environ["CEO_TITLE"]
 
-SMTP_SERVER = "://gmail.com"
+
+SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 GMAIL_USER = os.environ.get("GMAIL_USER")
 GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
