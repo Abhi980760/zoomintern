@@ -1,17 +1,22 @@
+
 import axios from "axios";
 
-// 1. छोटे अक्षरों वाला api - पूरी बेस URL के साथ
+// Backend API URL
+const API_BASE_URL = "https://zoomintern.onrender.com/api";
+
+// Create Axios instance
 export const api = axios.create({
-  baseURL: "https://zoomintern.onrender.com/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 60000,
 });
 
-// 2. बड़े अक्षरों वाला API - पूरी बेस URL के साथ (ताकि कोई भी फ़ाइल क्रैश न हो)
+// Also export API for files that use this name
 export const API = api;
 
-// 3. टोकन और ऑथेंटिकेशन के सभी ज़रूरी फंक्शन्स जो अलग-अलग फाइलों को चाहिए
+// Admin token functions
 export const saveToken = (token) => {
   localStorage.setItem("zi_admin_access", token);
 };
@@ -24,17 +29,33 @@ export const clearToken = () => {
   localStorage.removeItem("zi_admin_access");
 };
 
-
-export function saveInternToken(token) {
+// Intern token functions
+export const saveInternToken = (token) => {
   localStorage.setItem("zi_intern_token", token);
-}
+};
 
 export const getInternToken = () => {
-  return localStorage.getItem("zi_admin_access"); 
+  return localStorage.getItem("zi_intern_token");
 };
 
 export const clearInternToken = () => {
-  localStorage.removeItem("zi_admin_access");
+  localStorage.removeItem("zi_intern_token");
 };
-// सुरक्षा के लिए डिफ़ॉल्ट एक्सपोर्ट
+
+// Automatically attach the admin token to API requests
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Export default API instance
 export default api;
