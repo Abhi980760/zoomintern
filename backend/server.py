@@ -79,39 +79,46 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("zoomintern")
 
 
+
 async def _send_managed_email(*, to: str, subject: str, html: str) -> str | None:
-    import asyncio
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
+    import os
+    import httpx
 
-    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
-        raise RuntimeError("GMAIL_USER or GMAIL_APP_PASSWORD is missing")
+    api_key = os.environ.get("RESEND_API_KEY")
+    from_email = os.environ.get("EMAIL_FROM_EMAIL")
+    from_name = os.environ.get("EMAIL_FROM_NAME", "ZoomIntern")
 
-    msg = MIMEMultipart("alternative")
-    msg["From"] = f"{EMAIL_FROM_NAME} <{GMAIL_USER}>"
-    msg["To"] = to
-    msg["Subject"] = subject
+    if not api_key or not from_email:
+        raise RuntimeError(
+            "RESEND_API_KEY or EMAIL_FROM_EMAIL is missing"
+        )
 
-    if EMAIL_REPLY_TO:
-        msg["Reply-To"] = EMAIL_REPLY_TO
-
-    msg.attach(MIMEText(html, "html", "utf-8"))
-
-    with smtplib.SMTP("smtp.gmail.com", 587, timeout=60) as server:
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-        server.send_message(msg)
+    payload = {
+        "from": f"{from_name} <{from_email}>",
+        "to": [to],
+        "subject": subject,
+        "html": html,
+    }
 
     try:
-        await asyncio.to_thread(send_email)
-        logger.info("Email sent successfully to %s", to)
-        return None
-    except Exception as error:
-        logger.exception("Gmail email delivery failed")
-        raise RuntimeError("Email delivery could not be completed") from error
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+
+        response.raise_for_status()
+        result = response.json()
+        logger.info("Resend accepted email to %s", to)
+        return result.get("id")
+
+    except Exception:
+        logger.exception("Resend email delivery failed")
+        raise
 
 
     def send_email():
