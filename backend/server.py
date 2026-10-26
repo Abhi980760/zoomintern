@@ -71,7 +71,6 @@ APP_NAME = "zoomintern"
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
-api_router = APIRouter(prefix="/api")
 security = HTTPBearer(auto_error=False)
 
 logging.basicConfig(level=logging.INFO)
