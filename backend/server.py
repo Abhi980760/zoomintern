@@ -27,7 +27,11 @@ from urllib.parse import urlparse, quote
 from certificate_pdf import build_certificate_pdf
 
 
+
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(title="ZoomIntern API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +45,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+api_router = APIRouter(prefix="/api")
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
